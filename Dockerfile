@@ -55,8 +55,9 @@ WORKDIR /app
 ARG GIT_SHA=unknown
 
 COPY app/ /app/app/
-RUN sed -i "s/unknown/${GIT_SHA}/" /app/app/frontend/index.html
-
+# RUN sed -i "s/unknown/${GIT_SHA}/" /app/app/frontend/index.html
+RUN sed -i "s/content=\"unknown\"/content=\"${GIT_SHA}\"/" \
+    /app/app/frontend/index.html
 COPY models/ /app/models/
 COPY reports/metrics/evaluation_summary.json /app/reports/metrics/evaluation_summary.json
 

@@ -1659,7 +1659,7 @@ function initFooter() {
             buildEl.textContent = `build ${sha.slice(0, 7)}`;
 
             buildEl.href =
-                `https://github.com/RohitDusane/k3s-aws-deployer/commit/${sha}`;
+                `https://github.com/RohitDusane/riskguard-fraud-detection/commit/${sha}`;
         } else {
             buildEl.textContent = "local build";
             buildEl.removeAttribute("href");
