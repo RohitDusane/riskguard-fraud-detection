@@ -114,6 +114,7 @@ jobs:
     needs: [lint-and-test, evaluate-model, validate-k8s-manifests]
     permissions:
       contents: read
+      id-token: write
     if: github.ref == 'refs/heads/main'   # only push a real image from main, not every PR
     outputs:
       image: ${{ steps.image-tag.outputs.image }}
@@ -251,6 +252,7 @@ jobs:
     needs: build-scan-push
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: Configure AWS credentials (OIDC, no stored keys)
         uses: aws-actions/configure-aws-credentials@v4
