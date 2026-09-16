@@ -1,5 +1,5 @@
 # RiskGuard — Fintech Fraud Risk Scoring MLOps Platform
-![CI](https://github.com/RohitDusane/riskguard-mlops/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/RohitDusane/riskguard-fraud-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/RohitDusane/riskguard-fraud-detection/actions/workflows/ci.yml)
 ![Coverage](https://raw.githubusercontent.com/RohitDusane/riskguard-mlops/main/coverage.svg)
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue.svg)
