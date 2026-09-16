@@ -321,7 +321,7 @@ jobs:
 
           export HOME="/home/ec2-user"
 
-          git config --global --add safe.directory "$DEPLOY_REPO"
+          git config --system --add safe.directory "$DEPLOY_REPO"
 
           echo "=== Git status ==="
           git status
@@ -501,12 +501,26 @@ jobs:
 
           COMMANDS="${COMMANDS//__IMAGE__/$IMAGE}"
 
+          echo "=== Preparing SSM parameters ==="
+
+          PARAMS_FILE=$(mktemp)
+
+          jq -n \
+            --arg commands "$COMMANDS" \
+            '{
+              commands: ($commands | split("\n") | map(select(length > 0)))
+            }' > "$PARAMS_FILE"
+
+          echo "=== Sending SSM command ==="
+
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters "commands=$(printf '%s\n' "$COMMANDS" | jq -R -s -c 'split("\n") | map(select(length > 0))')" \
+            --parameters "file://$PARAMS_FILE" \
             --query "Command.CommandId" \
             --output text)
+
+          rm -f "$PARAMS_FILE"
 
           echo "SSM Command ID: $COMMAND_ID"
 
