@@ -296,14 +296,29 @@ jobs:
           sudo k3s --version
 
           echo "=== Updating deployment repository ==="
-          
+
           cd /home/ec2-user/k3s-aws-deployer
+
+          echo "=== Git identity ==="
+          whoami
+          id
+          echo "HOME=$HOME"
+
+          echo "=== Configure Git safe directory ==="
+          git config --global --add safe.directory /home/ec2-user/k3s-aws-deployer
+
+          echo "=== Git status ==="
+          git status
+
+          echo "=== Fetching latest deployment manifests ==="
           git fetch origin main
+
           git checkout main
           git reset --hard origin/main
 
           echo "=== Git commit ==="
           git rev-parse HEAD
+
 
           echo "=== Applying Kubernetes namespace ==="
           sudo k3s kubectl apply \
