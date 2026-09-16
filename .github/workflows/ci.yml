@@ -296,28 +296,75 @@ jobs:
           sudo k3s --version
 
           echo "=== Updating deployment repository ==="
+          DEPLOY_REPO="/home/ec2-user/k3s-aws-deployer"
 
-          cd /home/ec2-user/k3s-aws-deployer
+          if [ ! -d "$DEPLOY_REPO/.git" ]; then
+            echo "ERROR: Deployment repository does not exist: $DEPLOY_REPO"
+            exit 1
+          fi
 
-          echo "=== Git identity ==="
-          whoami
-          id
-          echo "HOME=$HOME"
+          cd "$DEPLOY_REPO"
+
+          echo "=== Git environment ==="
+          echo "User: $(whoami)"
+          echo "UID: $(id -u)"
+          echo "GID: $(id -g)"
+          echo "HOME: ${HOME:-<unset>}"
+          echo "Git: $(git --version)"
+
+          echo "=== Repository ownership ==="
+          ls -ld "$DEPLOY_REPO"
+          ls -ld "$DEPLOY_REPO/.git"
 
           echo "=== Configure Git safe directory ==="
-          git config --global --add safe.directory /home/ec2-user/k3s-aws-deployer
+
+          # SSM may not provide HOME, so make it explicit.
+          export HOME="/home/ec2-user"
+
+          git config --global --add safe.directory "$DEPLOY_REPO"
 
           echo "=== Git status ==="
           git status
 
-          echo "=== Fetching latest deployment manifests ==="
+          echo "=== Fetching origin/main ==="
           git fetch origin main
 
+          echo "=== Checkout main ==="
           git checkout main
+
+          echo "=== Resetting to origin/main ==="
           git reset --hard origin/main
 
           echo "=== Git commit ==="
           git rev-parse HEAD
+
+          echo "=== Git status ==="
+          git status
+
+
+          # echo "=== Updating deployment repository ==="
+
+          # cd /home/ec2-user/k3s-aws-deployer
+
+          # echo "=== Git identity ==="
+          # whoami
+          # id
+          # echo "HOME=$HOME"
+
+          # echo "=== Configure Git safe directory ==="
+          # git config --global --add safe.directory /home/ec2-user/k3s-aws-deployer
+
+          # echo "=== Git status ==="
+          # git status
+
+          # echo "=== Fetching latest deployment manifests ==="
+          # git fetch origin main
+
+          # git checkout main
+          # git reset --hard origin/main
+
+          # echo "=== Git commit ==="
+          # git rev-parse HEAD
 
 
           echo "=== Applying Kubernetes namespace ==="
