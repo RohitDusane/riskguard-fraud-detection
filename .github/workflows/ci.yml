@@ -353,8 +353,6 @@ jobs:
             -n risk-mlops \
             --timeout=180s
 
-
-
           echo "=== Current deployment ==="
           sudo k3s kubectl get deployment risk-mlops-api \
             -n risk-mlops \
