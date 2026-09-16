@@ -30,7 +30,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`grafana.52.1.55.147.nip.io`)
+    - match: Host(`grafana.riskguard.rohittops.co.in`)
       # match: Host(`grafana.riskguard.abc-ops.co.in`)
       kind: Rule
       priority: 1

@@ -15,11 +15,13 @@ env:
 
 permissions:
   id-token: write   # required for OIDC -> AWS role assumption
-  contents: write
+  contents: read
 
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +34,6 @@ jobs:
           pip install -r requirements.txt
           pip install "setuptools<82" coverage-badge
 
-
       - name: Lint
         run: ruff check .
 
@@ -40,17 +41,15 @@ jobs:
         run: pytest --cov=app --cov-report=term-missing --cov-fail-under=60
 
       - name: Generate coverage badge
-        # uses: tj-actions/coverage-badge-py@v2
-        run: coverage-badge -f -o coverage.svg
-        # with:
-        #   output: coverage.svg
+        run: |
+          coverage-badge -f -o app/frontend/coverage.svg
 
-      - name: Commit badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update coverage badge [skip ci]"
-          file_pattern: coverage.svg
+      # - name: Commit badge
+      #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      #   uses: stefanzweifel/git-auto-commit-action@v5
+      #   with:
+      #     commit_message: "chore: update coverage badge [skip ci]"
+      #     file_pattern: coverage.svg
 
     
   evaluate-model:
@@ -58,7 +57,7 @@ jobs:
     needs: lint-and-test
     if: github.ref == 'refs/heads/main'
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -83,6 +82,8 @@ jobs:
 
   validate-k8s-manifests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -111,6 +112,8 @@ jobs:
   build-scan-push:
     runs-on: ubuntu-latest
     needs: [lint-and-test, evaluate-model, validate-k8s-manifests]
+    permissions:
+      contents: read
     if: github.ref == 'refs/heads/main'   # only push a real image from main, not every PR
     outputs:
       image: ${{ steps.image-tag.outputs.image }}
@@ -246,6 +249,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build-scan-push
+    permissions:
+      contents: read
     steps:
       - name: Configure AWS credentials (OIDC, no stored keys)
         uses: aws-actions/configure-aws-credentials@v4
@@ -288,6 +293,68 @@ jobs:
           echo "=== K3s ==="
           sudo k3s --version
 
+          echo "=== Updating deployment repository ==="
+          
+          cd /home/ec2-user/k3s-aws-deployer
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+
+          echo "=== Git commit ==="
+          git rev-parse HEAD
+
+          echo "=== Applying Kubernetes namespace ==="
+          sudo k3s kubectl apply \
+            -f k8s/namespace.yaml
+
+          echo "=== Applying application configuration ==="
+          sudo k3s kubectl apply \
+            -f k8s/configmap.yaml
+
+          echo "=== Applying Traefik configuration ==="
+          sudo k3s kubectl apply \
+            -f k8s/traefik-middlewares.yaml
+
+          sudo k3s kubectl apply \
+            -f k8s/traefik-letsencrypt-config.yaml
+
+          echo "=== Applying application manifests ==="
+          sudo k3s kubectl apply \
+            -f k8s/deploy.yaml
+
+          sudo k3s kubectl apply \
+            -f k8s/service.yaml
+
+          echo "=== Applying monitoring manifests ==="
+          sudo k3s kubectl apply \
+            -f k8s/monitoring/
+
+          echo "=== Monitoring resources ==="
+          sudo k3s kubectl get pods -n risk-mlops
+
+          echo "=== Monitoring deployments ==="
+          sudo k3s kubectl get deployments -n risk-mlops
+
+          echo "=== Monitoring services ==="
+          sudo k3s kubectl get svc -n risk-mlops
+
+          sudo k3s kubectl rollout status \
+            deployment/prometheus \
+            -n risk-mlops \
+            --timeout=180s
+
+          sudo k3s kubectl rollout status \
+            deployment/grafana \
+            -n risk-mlops \
+            --timeout=180s
+
+          sudo k3s kubectl rollout status \
+            deployment/alertmanager \
+            -n risk-mlops \
+            --timeout=180s
+
+
+
           echo "=== Current deployment ==="
           sudo k3s kubectl get deployment risk-mlops-api \
             -n risk-mlops \
@@ -318,7 +385,7 @@ jobs:
           echo "=== Target image ==="
           echo "$IMAGE"
 
-          echo "=== Updating image ==="
+          echo "=== Updating application image ==="
 
           sudo k3s kubectl set image \
             deployment/risk-mlops-api \

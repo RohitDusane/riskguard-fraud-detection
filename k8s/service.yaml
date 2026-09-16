@@ -33,7 +33,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`52.1.55.147.nip.io`) && PathPrefix(`/metrics`)
+    - match: (Host(`riskguard.rohittops.co.in`) || Host(`52.1.55.147.nip.io`)) && PathPrefix(`/metrics`)
       # match: Host(`riskguard.abc-ops.co.in`) && PathPrefix(`/metrics`)
       kind: Rule
       priority: 100
@@ -43,7 +43,7 @@ spec:
         - name: risk-mlops-api
           port: 8000
 
-    - match: Host(`52.1.55.147.nip.io`) && PathPrefix(`/api/v1/predict`)
+    - match: (Host(`riskguard.rohittops.co.in`) || Host(`52.1.55.147.nip.io`)) && PathPrefix(`/api/v1/predict`)
       # match: Host(`riskguard.abc-ops.co.in`) && PathPrefix(`/api/v1/predict`)
       kind: Rule
       priority: 90
@@ -54,7 +54,7 @@ spec:
         - name: risk-mlops-api
           port: 8000
 
-    - match: Host(`52.1.55.147.nip.io`)
+    - match: (Host(`riskguard.rohittops.co.in`) || Host(`52.1.55.147.nip.io`))
       # match: Host(`riskguard.abc-ops.co.in`)
       kind: Rule
       priority: 1
