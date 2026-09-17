@@ -30,9 +30,9 @@ spec:
         # Fallback scrape path if you are NOT running the Prometheus Operator
         # (i.e. plain `prom/prometheus` like in your docker-compose). Safe to
         # leave in even if you do use the ServiceMonitor below.
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "8000"
-        prometheus.io/path: "/metrics"
+        # prometheus.io/scrape: "true"
+        # prometheus.io/port: "8000"
+        # prometheus.io/path: "/metrics"
 
     spec:
       imagePullSecrets:
