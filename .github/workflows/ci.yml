@@ -106,8 +106,7 @@ jobs:
             k8s/monitoring/monitoring-grafana.yaml
             k8s/monitoring/monitoring-kube-state-metrics.yaml
             k8s/monitoring/monitoring-prometheus-config.yaml
-            k8s/monitoring/monitoring-prometheus.yaml
-            k8s/monitoring/prometheus-monitor.yaml           
+            k8s/monitoring/monitoring-prometheus.yaml          
 
   build-scan-push:
     runs-on: ubuntu-latest
